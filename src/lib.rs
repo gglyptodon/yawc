@@ -1,7 +1,7 @@
 extern crate core;
 
 use std::collections::{HashMap, HashSet};
-use std::fmt::{Display, Error, Formatter, Write};
+use std::fmt::{Display, Formatter, Write};
 
 static WORDS: &'static str = include_str!("resources/words.txt");
 
@@ -20,6 +20,7 @@ pub struct Game {
     valid_words: HashSet<String>,
     attempted_words: Vec<String>,
     current_attempt: String,
+    target: String,
 }
 #[derive(Debug, Clone)]
 pub struct InvalidEntryError;
@@ -31,10 +32,16 @@ impl Display for InvalidEntryError {
 
 impl Game {
     pub fn new() -> Self {
-        let words = WORDS
-            .split('\n')
-            .map(|x| String::from(x).to_ascii_uppercase())
-            .collect::<HashSet<String>>();
+        use rand::Rng;
+        let mut rng = rand::thread_rng();
+       // let words = WORDS
+       //     .split('\n')
+       //     .map(|x| String::from(x).to_ascii_uppercase())
+       //     .collect::<HashSet<String>>();
+        let words_vec = WORDS.split('\n').map(|x| String::from(x).to_ascii_uppercase()).collect::<Vec<String>>();
+        let random_word= words_vec.get(rng.gen_range(0..words_vec.len())).unwrap().clone();
+        let words = HashSet::from_iter(words_vec.into_iter());
+
         let letters = ('A'..='Z')
             .into_iter()
             .map(|x| Letter {
@@ -55,6 +62,7 @@ impl Game {
             valid_words: words,
             attempted_words: vec![],
             current_attempt: "".to_string(),
+            target: String::from(random_word)
         }
     }
     pub fn attempt(&mut self, word: String) -> Result<(), InvalidEntryError> {
@@ -82,7 +90,7 @@ impl Display for Game {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let mut board = String::new();
         for attempt in &self.attempted_words {
-            writeln!(board, "{}", attempt)?;
+            writeln!(board, "|{:^10}|", attempt)?;
         }
         write!(
             f,
@@ -114,7 +122,12 @@ mod tests {
     #[test]
     fn test_debug_display() {
         let mut g = Game::new();
+        println!("{}", g.target);
         if let Ok(_) = g.attempt(String::from("tesla")) {
+            print!("{}", g);
+            println!("{:?}", g.letters);
+        }
+         if let Ok(_) = g.attempt(String::from("AISLE")) {
             print!("{}", g);
             println!("{:?}", g.letters);
         }
