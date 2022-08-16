@@ -2,7 +2,7 @@ extern crate core;
 
 use colored::Colorize;
 use std::collections::{HashMap, HashSet};
-use std::fmt::{format, Display, Formatter, Write};
+use std::fmt::{Display, Formatter, Write};
 
 
 static WORDS: &'static str = include_str!("resources/words.txt");
@@ -41,6 +41,7 @@ pub struct Game {
     current_attempt: String,
     pub target: String,
 }
+
 #[derive(Debug, Clone)]
 pub struct InvalidEntryError;
 impl Display for InvalidEntryError {
@@ -61,6 +62,7 @@ impl Game {
             .get(rng.gen_range(0..words_vec.len()))
             .unwrap()
             .clone();
+
         let words = HashSet::from_iter(words_vec.into_iter());
         let letters = ('A'..='Z')
             .into_iter()
@@ -84,6 +86,7 @@ impl Game {
             attempted_words: vec![],
             current_attempt: "".to_string(),
             target: String::from(random_word),
+
         }
     }
     fn update_letter_correct(&mut self, letter: char) {
@@ -193,8 +196,10 @@ mod tests {
         for l in &g.letters {
             print!("{}", l.1.to_string());
         }
-        for l in &g.letters {
-            println!("{}", l.1);
+
+        if let Ok(_) = g.attempt(String::from("AISLE")) {
+            print!("{}", g);
+            println!("{:?}", g.letters);
         }
 
     }
