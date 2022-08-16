@@ -3,6 +3,7 @@ extern crate core;
 use std::collections::{HashMap, HashSet};
 use std::fmt::{Display, Formatter, Write};
 
+
 static WORDS: &'static str = include_str!("resources/words.txt");
 
 #[derive(Debug)]
@@ -21,6 +22,7 @@ pub struct Game {
     attempted_words: Vec<String>,
     current_attempt: String,
     target: String,
+
 }
 #[derive(Debug, Clone)]
 pub struct InvalidEntryError;
@@ -34,14 +36,9 @@ impl Game {
     pub fn new() -> Self {
         use rand::Rng;
         let mut rng = rand::thread_rng();
-       // let words = WORDS
-       //     .split('\n')
-       //     .map(|x| String::from(x).to_ascii_uppercase())
-       //     .collect::<HashSet<String>>();
         let words_vec = WORDS.split('\n').map(|x| String::from(x).to_ascii_uppercase()).collect::<Vec<String>>();
         let random_word= words_vec.get(rng.gen_range(0..words_vec.len())).unwrap().clone();
         let words = HashSet::from_iter(words_vec.into_iter());
-
         let letters = ('A'..='Z')
             .into_iter()
             .map(|x| Letter {
@@ -63,6 +60,7 @@ impl Game {
             attempted_words: vec![],
             current_attempt: "".to_string(),
             target: String::from(random_word)
+
         }
     }
     pub fn attempt(&mut self, word: String) -> Result<(), InvalidEntryError> {
@@ -123,13 +121,15 @@ mod tests {
     fn test_debug_display() {
         let mut g = Game::new();
         println!("{}", g.target);
+
         if let Ok(_) = g.attempt(String::from("tesla")) {
             print!("{}", g);
             println!("{:?}", g.letters);
         }
-         if let Ok(_) = g.attempt(String::from("AISLE")) {
+        if let Ok(_) = g.attempt(String::from("AISLE")) {
             print!("{}", g);
             println!("{:?}", g.letters);
         }
+
     }
 }
