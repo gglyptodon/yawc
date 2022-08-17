@@ -85,7 +85,7 @@
 
 <script type="module">
     import init, { getState, getWord, attemptWord, showAttempts, getAttemptsRemaining, getKbUsed, 
-    getKbCorrect, getKbIncorrect } from "./pkg/yawc.js";
+    getKbCorrect, getKbIncorrect, isWon } from "./pkg/yawc.js";
     async function main() {
         await init();
         render();
@@ -96,8 +96,8 @@
         let keyboard_div = document.getElementById("keyboard");
         keyboard_div.innerHTML = "";
         keyboard.style.display = "inline-grid";
-        keyboard_div.style.gridTemplate = `repeat(3, auto) / repeat(9, auto)`;
-       let kb = "QWERTYIOP\nASDFGHJKL\n-ZXCVBNM".split("\n").map(row =>row.trim().split(''));
+        keyboard_div.style.gridTemplate = `repeat(3, auto) / repeat(10, auto)`;
+       let kb = "QWERTYUIOP\n-ASDFGHJKL\n--ZXCVBNM".split("\n").map(row =>row.trim().split(''));
         console.log(kb, kb.length);
         for (let r = 0;r<kb.length;r++){
             for (let c = 0; c < kb[r].length; c++){
@@ -140,13 +140,20 @@
 
     }
     function render() {
+        if (isWon()){
+            solution_div.innerHTML="😎>>>"+getWord()+"<<<😎";
 
+        }
         let state = showAttempts();
         let attempts_remaining= getAttemptsRemaining();
         let attempts_remaining_div = document.getElementById("remaining");
         let solution_div = document.getElementById("solution");
         if (attempts_remaining == 0){
-            solution_div.innerHTML=">>"+getWord()+"<<<";
+            solution_div.innerHTML="☹️>>>"+getWord()+"<<<☹️";
+        }
+        if (isWon()){
+            solution_div.innerHTML="😎>>>"+getWord()+"<<<😎";
+
         }
         attempts_remaining_div.innerHTML="attempts_remaining: "+attempts_remaining;
 
@@ -180,6 +187,7 @@
        attemptWord(newAttempt);
        render();
        updateKb();
+      document.getElementById("word_input").value="";
        }
     );
 
