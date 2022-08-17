@@ -10,3 +10,6 @@ wasm-bindgen = "0.2.82"
 rand = "0.8.5"
 getrandom = { version = "0.2", features = ["js"] }
 colored = "2.0.0"
+
+[lib]
+crate-type = ["cdylib"]

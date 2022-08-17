@@ -1,7 +1,4 @@
-pub mod lib;
-mod wasm_bindings;
-
-use crate::lib::Game;
+use crate::yawc::Game;
 fn main() {
     let mut g = Game::new();
     g.attempt(String::from("TESLA")).unwrap();
