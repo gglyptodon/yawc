@@ -7,9 +7,9 @@ static WORDS: &'static str = include_str!("resources/words.txt");
 #[derive(Debug)]
 pub struct Letter {
     char: char,
-    used: bool,                     // false -> grey
-    is_at_correct_position: bool,   // true->green
-    is_at_incorrect_position: bool, // true -> yellow
+    pub(crate) used: bool,                     // false -> grey
+    pub(crate) is_at_correct_position: bool,   // true->green
+    pub(crate) is_at_incorrect_position: bool, // true -> yellow
 }
 
 impl Display for Letter {
@@ -108,7 +108,8 @@ impl Game {
             for (i, c) in word.chars().enumerate() {
                 let entry = &mut self.letters.get_mut(&c).unwrap();
                 entry.used = true;
-                if word.contains(c) {
+                if self.target.contains(c) {
+
                     if word.get(i..i + 1).unwrap() == self.target.get(i..i + 1).unwrap() {
                         // println!("{}{}{}", &word.get(i..i + 1).unwrap(), c, c.to_string())
                         self.update_letter_correct(c);
@@ -123,6 +124,51 @@ impl Game {
     }
     pub fn show_attemps(&self) -> String {
         self.attempted_words.join("\n")
+    }
+    pub fn is_used(&self, letter: String) -> bool {
+        let mut res = false;
+        if letter.len() != 1 {
+            return false;
+        } else {
+            for c in letter.chars() {
+                if let Some(letter) = self.letters.get(&c) {
+                    res = letter.used
+                } else {
+                    res = false
+                }
+            }
+        }
+        res
+    }
+    pub fn is_at_incorrect_position(&self, letter: String) -> bool {
+        let mut res = false;
+        if letter.len() != 1 {
+            return false;
+        } else {
+            for c in letter.chars() {
+                if let Some(letter) = self.letters.get(&c) {
+                    res = letter.is_at_incorrect_position
+                } else {
+                    res = false
+                }
+            }
+        }
+        res
+    }
+    pub fn is_at_correct_position(&self, letter: String) -> bool {
+        let mut res = false;
+        if letter.len() != 1 {
+            return false;
+        } else {
+            for c in letter.chars() {
+                if let Some(letter) = self.letters.get(&c) {
+                    res = letter.is_at_correct_position
+                } else {
+                    res = false
+                }
+            }
+        }
+        res
     }
 }
 impl Default for Game {
@@ -200,7 +246,6 @@ mod tests {
 
         if let Ok(_) = g.attempt(String::from("12345")) {
             print!("{}", g);
-            //println!("{:?}", g.letters);
         }
         if let Ok(_) = g.attempt(String::from("AISLE")) {
             print!("{}", g);
@@ -221,5 +266,6 @@ mod tests {
             print!("{}", g);
             println!("{:?}", g.letters);
         }
+        println!("used: {}", g.is_used(String::from("A")))
     }
 }
