@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>YAWC</title>
+    <style>
+        html {
+            font-size: 100%;
+            font-family: monospace;
+            background-color: #2F154E;
+            color: #0EAF2E;
+        }
+        a {
+            color: white;
+        }
+        .field {
+            text-decoration: none;
+            text-align: center;
+            height: 1.5rem;
+            width: 1.5rem;
+            margin: 0.1rem;
+        }
+       .kbkey {
+            text-decoration: none;
+            text-align: center;
+            height: 1.5rem;
+            width: 1.5rem;
+            margin: 0.3rem;
+            color: white;
+            box-shadow:5px 5px 10px 1px #000;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1rem;
+            margin-top: 1rem;
+
+        }
+        #configure{
+           font-size: 100%;
+        }
+        #game{
+          box-shadow: 5px 5px 10px 1px #000;
+
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div id="solution">    </div>
+</div>
+
+<div class="container">
+<div id="game"></div>
+</div>
+<div class="container">
+    <div id="remaining">   </div>
+</div>
+
+<div class="container">
+    <div id="input">  <input type="text" id="word_input">  </div>
+    <div>    <button id="submit">Submit</button>    </div>
+</div>
+
+<div class="container">
+<div id="keyboard"> </div>
+</div>
+
+<script type="module">
+    import init, { getState, getWord, attemptWord, showAttempts, getAttemptsRemaining } from "./pkg/yawc.js";
+    async function main() {
+        await init();
+        render();
+
+    }
+    main();
+    function render() {
+
+        let state = showAttempts();
+        let attempts_remaining= getAttemptsRemaining();
+        let attempts_remaining_div = document.getElementById("remaining");
+        let solution_div = document.getElementById("solution");
+        if (attempts_remaining == 0){
+            solution_div.innerHTML=">>"+getWord()+"<<<";
+        }
+        attempts_remaining_div.innerHTML="attempts_remaining: "+attempts_remaining;
+
+        let game = document.getElementById("game");
+        game.innerHTML = "";
+        game.style.display = "inline-grid";
+        let board = state.split("\n").map(row =>row.trim().split(''));
+        game.style.gridTemplate = `repeat(${board.length}, auto) / repeat(${board[0].length}, auto)`;
+
+
+        for (let y = 0; y < board.length; y++) {
+          for (let x = 0; x < board[y].length; x++) {
+            let element = document.createElement("a");
+                //element.href = "#";
+                element.innerText = board[y][x];
+                element.classList.add("field");
+                game.appendChild(element);
+            }
+        }
+
+    }
+    let keyboard_div = document.getElementById("keyboard");
+    keyboard_div.innerHTML = "";
+    keyboard.style.display = "inline-grid";
+    keyboard_div.style.gridTemplate = `repeat(3, auto) / repeat(9, auto)`;
+
+    let kb = "QWERTYIOP\nASDFGHJKL\n-ZXCVBNM".split("\n").map(row =>row.trim().split(''));
+    console.log(kb, kb.length);
+    for (let r = 0;r<kb.length;r++){
+        for (let c = 0; c < kb[r].length; c++){
+            if( kb[r][c] == "-"){
+           let element = document.createElement("a");
+            //element.href = "#";
+            element.innerText = "";
+            //element.classList.add("kbkey");
+            keyboard.appendChild(element);
+            }else{
+            let element = document.createElement("a");
+            element.href = "#";
+            element.innerText = kb[r][c];
+            element.classList.add("kbkey");
+            element.addEventListener("click", evt => {
+            console.log(kb[r][c]);
+           document.getElementById("word_input").value+=kb[r][c];
+            });
+            keyboard.appendChild(element);
+           }}
+       }
+
+    let submitButton = document.getElementById("submit");
+       submitButton.addEventListener("click", evt => {
+       let newAttempt = document.getElementById("word_input").value;
+       evt.preventDefault();
+       //submit word
+       attemptWord(newAttempt);
+       render();
+       }
+    );
+
+
+</script>
+</body>
+</html>
