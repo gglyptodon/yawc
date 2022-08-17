@@ -7,9 +7,9 @@ static WORDS: &'static str = include_str!("resources/words.txt");
 #[derive(Debug)]
 pub struct Letter {
     char: char,
-    used: bool,                     // false -> grey
-    is_at_correct_position: bool,   // true->green
-    is_at_incorrect_position: bool, // true -> yellow
+    pub(crate) used: bool,                     // false -> grey
+    pub(crate) is_at_correct_position: bool,   // true->green
+    pub(crate) is_at_incorrect_position: bool, // true -> yellow
 }
 
 impl Display for Letter {
@@ -28,7 +28,7 @@ impl Display for Letter {
 }
 
 pub struct Game {
-    is_won: bool,
+    pub(crate) is_won: bool,
     is_over: bool,
     pub attempts_remaining: u8,
     pub letters: HashMap<char, Letter>,
@@ -95,8 +95,12 @@ impl Game {
         assert!(self.letters.get(&letter).unwrap().is_at_incorrect_position);
     }
     pub fn attempt(&mut self, word: String) -> Result<(), InvalidEntryError> {
+        if self.target == word{
+                self.is_won = true;
+        }
         if self.attempts_remaining < 1 {
             self.is_over = true;
+
             return Ok(());
         }
         let word = word.to_ascii_uppercase();
@@ -108,9 +112,8 @@ impl Game {
             for (i, c) in word.chars().enumerate() {
                 let entry = &mut self.letters.get_mut(&c).unwrap();
                 entry.used = true;
-                if word.contains(c) {
+                if self.target.contains(c) {
                     if word.get(i..i + 1).unwrap() == self.target.get(i..i + 1).unwrap() {
-                        // println!("{}{}{}", &word.get(i..i + 1).unwrap(), c, c.to_string())
                         self.update_letter_correct(c);
                     } else {
                         self.update_letter_incorrect(c);
@@ -124,7 +127,29 @@ impl Game {
     pub fn show_attemps(&self) -> String {
         self.attempted_words.join("\n")
     }
+    pub fn is_used(&self, letter: char) -> bool {
+        if let Some(l) = self.letters.get(&letter) {
+            l.used
+        } else {
+            false
+        }
+    }
+    pub fn is_at_incorrect_position(&self, letter: char) -> bool {
+        if let Some(l) = self.letters.get(&letter) {
+            l.is_at_incorrect_position
+        } else {
+            false
+        }
+    }
+    pub fn is_at_correct_position(&self, letter: char) -> bool {
+        if let Some(l) = self.letters.get(&letter) {
+            l.is_at_correct_position
+        } else {
+            false
+        }
+    }
 }
+
 impl Default for Game {
     fn default() -> Self {
         Self::new()
@@ -200,7 +225,6 @@ mod tests {
 
         if let Ok(_) = g.attempt(String::from("12345")) {
             print!("{}", g);
-            //println!("{:?}", g.letters);
         }
         if let Ok(_) = g.attempt(String::from("AISLE")) {
             print!("{}", g);
@@ -221,5 +245,6 @@ mod tests {
             print!("{}", g);
             println!("{:?}", g.letters);
         }
+        println!("used: {}", g.is_used('A'))
     }
 }
