@@ -1,0 +1,12 @@
+{
+  "name": "yawc",
+  "version": "0.1.0",
+  "files": [
+    "yawc_bg.wasm",
+    "yawc.js",
+    "yawc.d.ts"
+  ],
+  "module": "yawc.js",
+  "types": "yawc.d.ts",
+  "sideEffects": false
+}
