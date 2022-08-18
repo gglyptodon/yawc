@@ -96,6 +96,7 @@ impl Game {
     }
     pub fn attempt(&mut self, word: String) -> Result<(), InvalidEntryError> {
         if self.target.to_ascii_uppercase() == word.to_ascii_uppercase(){
+
                 self.is_won = true;
         }
         if self.attempts_remaining < 1 {
