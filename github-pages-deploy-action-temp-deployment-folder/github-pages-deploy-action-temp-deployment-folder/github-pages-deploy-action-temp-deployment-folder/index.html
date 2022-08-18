@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>YAWC</title>
+    <style>
+        html {
+            font-size: 100%;
+            font-family: monospace;
+            background-color: #2F154E;
+            color: #0EAF2E;
+        }
+        a {
+            color: white;
+        }
+        .field {
+            text-decoration: none;
+            text-align: center;
+            height: 1.5rem;
+            width: 1.5rem;
+            margin: 0.1rem;
+        }
+       .kbkey {
+            text-decoration: none;
+            text-align: center;
+            height: 2.0rem;
+            width: 3.5rem;
+            margin: 0.4rem;
+            box-shadow:5px 5px 10px 1px #000;
+        }
+        .unused{
+            color: white;
+            font-weight: bold;
+            background-color: purple;
+        }
+        .correct_position{
+             background-color: green;
+             font-weight: bold;
+        }
+        .incorrect_position{
+             background-color: yellow;
+            color: black;
+             font-weight: bold;
+        }
+        .used{
+            color: grey;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1rem;
+            margin-top: 1rem;
+
+        }
+        #configure{
+           font-size: 100%;
+        }
+        #game{
+          box-shadow: 5px 5px 10px 1px #000;
+
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div id="solution">    </div>
+</div>
+
+<div class="container">
+<div id="game"></div>
+</div>
+<div class="container">
+    <div id="remaining">   </div>
+</div>
+
+
+<div class="container">
+    <div id="input">  <input type="text" id="word_input">  </div>
+    <div>    <button id="submit">Submit</button>    </div>
+</div>
+
+<div class="container">
+<div id="keyboard"> </div>
+</div>
+<div class="container">
+    <div>    <button id="new_game">New Game</button>    </div>
+</div>
+
+<script type="module">
+    import init, { getState, getWord, attemptWord, showAttempts, showAttemptsRes, getAttemptsRemaining, getKbUsed, 
+    getKbCorrect, getKbIncorrect, isWon, newGame } from "./pkg/yawc.js";
+    async function main() {
+        await init();
+        render();
+
+    }
+    main();
+    function updateKb(){
+        let keyboard_div = document.getElementById("keyboard");
+        keyboard_div.innerHTML = "";
+        keyboard.style.display = "inline-grid";
+        keyboard_div.style.gridTemplate = `repeat(3, auto) / repeat(10, auto)`;
+       let kb = "QWERTYUIOP\n-ASDFGHJKL\n--ZXCVBNM".split("\n").map(row =>row.trim().split(''));
+       for (let r = 0;r<kb.length;r++){
+            for (let c = 0; c < kb[r].length; c++){
+                if( kb[r][c] == "-"){
+                   let element = document.createElement("div");
+                    element.classList.add("spacer")
+
+                    element.innerText = "";
+                    keyboard.appendChild(element);
+                }
+                else{
+                    let element = document.createElement("a");
+                    element.href = "#";
+                    element.innerText = kb[r][c];
+                    element.classList.add("kbkey");
+            if (getKbUsed(kb[r][c])){
+                element.classList.add("used")
+            }
+            if (getKbCorrect(kb[r][c])){
+                element.classList.replace("used", "correct_position");
+                
+            }
+              if (getKbIncorrect(kb[r][c])){
+                              element.classList.replace("used", "incorrect_position");
+
+             }
+
+           element.addEventListener("click", evt => {
+           document.getElementById("word_input").value+=kb[r][c];
+            });
+            keyboard.appendChild(element);
+           }
+        }
+        }
+
+    }
+    function render() {
+      
+
+        let attempts_remaining= getAttemptsRemaining();
+        let attempts_remaining_div = document.getElementById("remaining");
+        let solution_div = document.getElementById("solution");
+        if (attempts_remaining == 0){
+            solution_div.innerHTML="☹️ "+getWord()+" ☹️";
+        }
+        if (isWon()){
+            solution_div.innerHTML="😎 "+getWord()+" 😎";
+
+        }
+        attempts_remaining_div.innerHTML="attempts_remaining: "+attempts_remaining;
+
+       // if (isWon()){
+        //    solution_div.innerHTML="😎>>>"+getWord()+"<<<😎";
+
+//        }
+        let state = showAttempts();
+        let state_res = showAttemptsRes();
+        console.log(state_res, getWord());
+        
+
+        let game = document.getElementById("game");
+        game.innerHTML = "";
+        game.style.display = "inline-grid";
+        let board = state.split("\n").map(row =>row.trim().split(''));
+        let board_res = state_res.split("\n").map(row =>row.trim().split(''));
+        game.style.gridTemplate = `repeat(${board.length}, auto) / repeat(${board[0].length}, auto)`;
+
+        for (let y = 0; y < board.length; y++) {
+          for (let x = 0; x < board[y].length; x++) {
+            let element = document.createElement("div");
+                element.innerText = board[y][x];
+                element.classList.add("field");
+                console.log(y,x,board.length, board[y][x],getKbCorrect(board[y][x]), board_res[y][x] );
+                if (board_res[y][x] == 'c'){
+                    element.classList.add("correct_position");
+                
+                }
+                if (board_res[y][x] == 'i'){
+                    element.classList.add("incorrect_position");
+                }
+                element.id="last";
+                game.appendChild(element);
+            }
+        }
+
+    }
+
+    let submitButton = document.getElementById("submit");
+       submitButton.addEventListener("click", evt => {
+        if (isWon()){return}
+       let newAttempt = document.getElementById("word_input").value;
+       evt.preventDefault();
+       //submit word
+       attemptWord(newAttempt);
+       render();
+       updateKb();
+      document.getElementById("word_input").value="";
+       }
+    );
+    let newGameButton = document.getElementById("new_game");
+       newGameButton.addEventListener("click", evt => {
+        evt.preventDefault();
+        newGame();
+
+       //let newAttempt = document.getElementById("word_input").value;
+       evt.preventDefault();
+       //submit word
+       //attemptWord(newAttempt);
+       render();
+       updateKb();
+      document.getElementById("word_input").value="";
+       }
+    );
+
+
+</script>
+</body>
+</html>
