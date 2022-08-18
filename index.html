@@ -74,6 +74,7 @@
     <div id="remaining">   </div>
 </div>
 
+
 <div class="container">
     <div id="input">  <input type="text" id="word_input">  </div>
     <div>    <button id="submit">Submit</button>    </div>
@@ -82,10 +83,13 @@
 <div class="container">
 <div id="keyboard"> </div>
 </div>
+<div class="container">
+    <div>    <button id="new_game">New Game</button>    </div>
+</div>
 
 <script type="module">
-    import init, { getState, getWord, attemptWord, showAttempts, getAttemptsRemaining, getKbUsed, 
-    getKbCorrect, getKbIncorrect, isWon } from "./pkg/yawc.js";
+    import init, { getState, getWord, attemptWord, showAttempts, showAttemptsRes, getAttemptsRemaining, getKbUsed, 
+    getKbCorrect, getKbIncorrect, isWon, newGame } from "./pkg/yawc.js";
     async function main() {
         await init();
         render();
@@ -101,10 +105,10 @@
        for (let r = 0;r<kb.length;r++){
             for (let c = 0; c < kb[r].length; c++){
                 if( kb[r][c] == "-"){
-                   let element = document.createElement("a");
-                    //element.href = "#";
+                   let element = document.createElement("div");
+                    element.classList.add("spacer")
+
                     element.innerText = "";
-                 //element.classList.add("kbkey");
                     keyboard.appendChild(element);
                 }
                 else{
@@ -115,18 +119,14 @@
             if (getKbUsed(kb[r][c])){
                 element.classList.add("used")
             }
-            //console.log("used ",kb[r][c], kb);
             if (getKbCorrect(kb[r][c])){
                 element.classList.replace("used", "correct_position");
-                //element.classList.remove("incorrect_position");
-                //element.classList.add("correct_position")
+                
             }
               if (getKbIncorrect(kb[r][c])){
                               element.classList.replace("used", "incorrect_position");
 
-
              }
-
 
            element.addEventListener("click", evt => {
            document.getElementById("word_input").value+=kb[r][c];
@@ -138,52 +138,77 @@
 
     }
     function render() {
-        if (isWon()){
-            solution_div.innerHTML="😎>>>"+getWord()+"<<<😎";
+      
 
-        }
-        let state = showAttempts();
-        //console.log(getWord());
         let attempts_remaining= getAttemptsRemaining();
         let attempts_remaining_div = document.getElementById("remaining");
         let solution_div = document.getElementById("solution");
         if (attempts_remaining == 0){
-            solution_div.innerHTML="☹️>>>"+getWord()+"<<<☹️";
+            solution_div.innerHTML="☹️ "+getWord()+" ☹️";
         }
         if (isWon()){
-            solution_div.innerHTML="😎>>>"+getWord()+"<<<😎";
+            solution_div.innerHTML="😎 "+getWord()+" 😎";
 
         }
         attempts_remaining_div.innerHTML="attempts_remaining: "+attempts_remaining;
+
+       // if (isWon()){
+        //    solution_div.innerHTML="😎>>>"+getWord()+"<<<😎";
+
+//        }
+        let state = showAttempts();
+        let state_res = showAttemptsRes();
+        console.log(state_res, getWord());
+        
 
         let game = document.getElementById("game");
         game.innerHTML = "";
         game.style.display = "inline-grid";
         let board = state.split("\n").map(row =>row.trim().split(''));
+        let board_res = state_res.split("\n").map(row =>row.trim().split(''));
         game.style.gridTemplate = `repeat(${board.length}, auto) / repeat(${board[0].length}, auto)`;
 
         for (let y = 0; y < board.length; y++) {
           for (let x = 0; x < board[y].length; x++) {
-            let element = document.createElement("a");
-                //element.href = "#";
+            let element = document.createElement("div");
                 element.innerText = board[y][x];
                 element.classList.add("field");
+                console.log(y,x,board.length, board[y][x],getKbCorrect(board[y][x]), board_res[y][x] );
+                if (board_res[y][x] == 'c'){
+                    element.classList.add("correct_position");
+                
+                }
+                if (board_res[y][x] == 'i'){
+                    element.classList.add("incorrect_position");
+                }
+                element.id="last";
                 game.appendChild(element);
             }
         }
 
     }
 
-
-
-       
-
     let submitButton = document.getElementById("submit");
        submitButton.addEventListener("click", evt => {
+        if (isWon()){return}
        let newAttempt = document.getElementById("word_input").value;
        evt.preventDefault();
        //submit word
        attemptWord(newAttempt);
+       render();
+       updateKb();
+      document.getElementById("word_input").value="";
+       }
+    );
+    let newGameButton = document.getElementById("new_game");
+       newGameButton.addEventListener("click", evt => {
+        evt.preventDefault();
+        newGame();
+
+       //let newAttempt = document.getElementById("word_input").value;
+       evt.preventDefault();
+       //submit word
+       //attemptWord(newAttempt);
        render();
        updateKb();
       document.getElementById("word_input").value="";

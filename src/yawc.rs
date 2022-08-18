@@ -1,10 +1,11 @@
 use colored::Colorize;
 use std::collections::{HashMap, HashSet};
 use std::fmt::{Display, Formatter, Write};
+use crate::wasm_interface::get_attempts_remaining;
 
 static WORDS: &'static str = include_str!("resources/words.txt");
 
-#[derive(Debug)]
+#[derive(Debug,Clone)]
 pub struct Letter {
     char: char,
     pub(crate) used: bool,                     // false -> grey
@@ -34,6 +35,7 @@ pub struct Game {
     pub letters: HashMap<char, Letter>,
     valid_words: HashSet<String>,
     attempted_words: Vec<String>,
+    attempted_res: Vec<String>,
     current_attempt: String,
     pub target: String,
 }
@@ -80,9 +82,22 @@ impl Game {
             letters: letter_map,
             valid_words: words,
             attempted_words: vec![],
+            attempted_res: vec![],
             current_attempt: "".to_string(),
             target: random_word,
         }
+    }
+    pub fn reconfigure(&mut self){
+        let ng = Game::new();
+        self.is_won = false;
+        self.is_over = false;
+        self.attempts_remaining = ng.attempts_remaining;
+        self.attempted_res = vec![];
+        self.attempted_words = vec![];
+        self.letters = ng.letters.clone();
+        self.target = ng.target.clone();
+        self.valid_words = ng.valid_words;
+        self.current_attempt = "".to_string();
     }
     fn update_letter_correct(&mut self, letter: char) {
         let l = self.letters.get_mut(&letter).unwrap();
@@ -110,23 +125,33 @@ impl Game {
         }
         if self.valid_words.contains(&*word) {
             self.attempts_remaining -= 1;
+            let mut res =String::new(); //todo refactor
             for (i, c) in word.chars().enumerate() {
                 let entry = &mut self.letters.get_mut(&c).unwrap();
                 entry.used = true;
                 if self.target.contains(c) {
                     if word.get(i..i + 1).unwrap() == self.target.get(i..i + 1).unwrap() {
                         self.update_letter_correct(c);
+                        res.push('c'); //todo refactor
                     } else {
                         self.update_letter_incorrect(c);
-                    }
+                        res.push('i'); //todo refactor
+                     }
+                }
+                else {
+                    res.push('u');
                 }
             }
             self.attempted_words.push(word);
+            self.attempted_res.push(res);
         }
         Ok(())
     }
     pub fn show_attemps(&self) -> String {
         self.attempted_words.join("\n")
+    }
+    pub fn show_attemps_res(&self) -> String {
+        self.attempted_res.join("\n")
     }
     pub fn is_used(&self, letter: char) -> bool {
         if let Some(l) = self.letters.get(&letter) {

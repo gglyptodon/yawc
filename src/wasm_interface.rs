@@ -6,6 +6,11 @@ thread_local! {
    static YAWC: RefCell<Game> = RefCell::new(Game::new());
 }
 
+#[wasm_bindgen(js_name=newGame)]
+pub fn new_game() {
+    YAWC.with(|y| y.borrow_mut().reconfigure())
+}
+
 #[wasm_bindgen(js_name=getState)]
 pub fn get_state() -> String {
     YAWC.with(|y| y.borrow().to_string())
@@ -15,7 +20,10 @@ pub fn get_state() -> String {
 pub fn show_attempts() -> String {
     YAWC.with(|y| y.borrow().show_attemps())
 }
-
+#[wasm_bindgen(js_name=showAttemptsRes)]
+pub fn show_attempts_res() -> String {
+    YAWC.with(|y| y.borrow().show_attemps_res())
+}
 #[wasm_bindgen(js_name=getAttemptsRemaining)]
 pub fn get_attempts_remaining() -> u8 {
     YAWC.with(|y| y.borrow().attempts_remaining)
