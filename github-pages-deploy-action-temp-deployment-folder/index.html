@@ -142,6 +142,7 @@
                         }
 
                         element.addEventListener("click", evt => {
+                            evt.preventDefault();
                             document.getElementById("word_input").value += kb[r][c];
                         });
                         keyboard.appendChild(element);
@@ -211,10 +212,11 @@
         newGameButton.addEventListener("click", evt => {
             evt.preventDefault();
             newGame();
-            evt.preventDefault();
             render();
             updateKb();
             document.getElementById("word_input").value = "";
+            document.getElementById("solution").innerHTML= "";
+
         }
         );
 
