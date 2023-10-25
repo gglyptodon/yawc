@@ -33,6 +33,10 @@
             box-shadow: 5px 5px 10px 1px #000;
         }
 
+        .kbcontrol {
+            background-color: #887888;
+        }
+
         .unused {
             color: white;
             font-weight: bold;
@@ -113,15 +117,54 @@
             let keyboard_div = document.getElementById("keyboard");
             keyboard_div.innerHTML = "";
             keyboard.style.display = "inline-grid";
-            keyboard_div.style.gridTemplate = `repeat(3, auto) / repeat(10, auto)`;
-            let kb = "QWERTYUIOP\n-ASDFGHJKL\n--ZXCVBNM".split("\n").map(row => row.trim().split(''));
+            keyboard_div.style.gridTemplate = `repeat(3, auto) / repeat(12, auto)`;
+            let kb = "Q W E R T Y U I O P 🔙 🆑 - A S D F G H J K L 🆗 \n - - - Z X C V B N M".split("\n").map(row => row.trim().split(' '));
             for (let r = 0; r < kb.length; r++) {
                 for (let c = 0; c < kb[r].length; c++) {
                     if (kb[r][c] == "-") {
                         let element = document.createElement("div");
                         element.classList.add("spacer")
-
                         element.innerText = "";
+                        keyboard.appendChild(element);
+                    }
+                    else if (["🔙", "🆑", "🆗"].includes(kb[r][c])) {
+                        let element = document.createElement("a");
+                        console.log("back");
+                        element.classList.add("kbkey");
+                        element.classList.add("kbcontrol");
+                        element.innerText = kb[r][c];
+
+                        if (kb[r][c] == "🆑") {
+                            element.addEventListener("click", evt => {
+                                evt.preventDefault();
+                                document.getElementById("word_input").value = "";
+                            });
+                        }
+
+                        if (kb[r][c] == "🔙") {
+                            element.addEventListener("click", evt => {
+                                evt.preventDefault();
+                                let tmp = document.getElementById("word_input").value;
+                                document.getElementById("word_input").value = tmp.substring(0, tmp.length - 1);;
+                            });
+                        }
+                        if (kb[r][c] == "🆗") {
+
+                            element.addEventListener("click", evt => {
+                                evt.preventDefault();
+
+                                if (isWon()) { return }
+                                let newAttempt = document.getElementById("word_input").value;
+                                //submit word
+                                attemptWord(newAttempt);
+                                render();
+                                updateKb();
+                                document.getElementById("word_input").value = "";
+                            });
+                        }
+
+
+
                         keyboard.appendChild(element);
                     }
                     else {
@@ -215,7 +258,7 @@
             render();
             updateKb();
             document.getElementById("word_input").value = "";
-            document.getElementById("solution").innerHTML= "";
+            document.getElementById("solution").innerHTML = "";
 
         }
         );
